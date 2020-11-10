@@ -24,10 +24,22 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject _hitMarkerPrefab;
 
+    [SerializeField]
+    private int _currentAmmo;
+
+    private int _maxAmmo;
+
+    private UIManager _uiManager;
+
+    [SerializeField]
+    private bool _hasCoin;
+
     // Start is called before the first frame update
     void Start()
     {
         _navAgent = GetComponent<NavMeshAgent>();
+
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
 
         _speed = 3.5f;
 
@@ -40,6 +52,12 @@ public class Player : MonoBehaviour
         _muzzelFlash.SetActive(false);
 
         _weapon = _gameObjWeapon.GetComponent<Weapon>();
+
+        _maxAmmo = 150;
+
+        _currentAmmo = _maxAmmo;
+
+        _hasCoin = false;
         
     }
 
@@ -56,31 +74,26 @@ public class Player : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
         }
 
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            _currentAmmo = _maxAmmo;
+
+            _uiManager.UpdateAmmo(_currentAmmo);
+        }
+
     }
 
     private void MouseInput()
     {
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) && _currentAmmo > 0)
         {
+            Shoot();
 
-            _weapon.Fire();
+            _currentAmmo--;
 
-            _muzzelFlash.SetActive(true);
-
-            Ray originRay = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            RaycastHit hitInfo;
+            _uiManager.UpdateAmmo(_currentAmmo);
             
-            if(Physics.Raycast(originRay, out hitInfo))
-            {
-                print("Hit: " + hitInfo);
-
-                GameObject newHitMarker = Instantiate(_hitMarkerPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
-
-                Destroy(newHitMarker, 1f);
-
-            }
- 
         }
         else
         {
@@ -89,6 +102,26 @@ public class Player : MonoBehaviour
             _weapon.StopFire();
         }
 
+    }
+
+    private void Shoot()
+    {
+        _weapon.Fire();
+
+        _muzzelFlash.SetActive(true);
+
+        Ray originRay = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        RaycastHit hitInfo;
+
+        if (Physics.Raycast(originRay, out hitInfo))
+        {
+            print("Hit: " + hitInfo);
+
+            GameObject newHitMarker = Instantiate(_hitMarkerPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+
+            Destroy(newHitMarker, 1f);
+
+        }
     }
 
     private void Move()
@@ -105,5 +138,12 @@ public class Player : MonoBehaviour
         velocity = transform.transform.TransformVector(velocity);
 
         _navAgent.Move(velocity * Time.deltaTime);
+    }
+
+    public void GetCoin()
+    {
+        _hasCoin = true;
+
+        _uiManager.AddCoin();
     }
 }
