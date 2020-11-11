@@ -21,7 +21,7 @@ public class Coin : MonoBehaviour
             
             Player player = other.GetComponent<Player>();
 
-            player.GetCoin();
+            player.GiveCoin();
 
             _audioSource.Play();
 

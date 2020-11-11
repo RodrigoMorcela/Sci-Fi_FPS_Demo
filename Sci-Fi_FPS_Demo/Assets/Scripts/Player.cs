@@ -34,6 +34,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private bool _hasCoin;
 
+    [SerializeField]
+    private GameObject _parentWeapon;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -58,6 +61,8 @@ public class Player : MonoBehaviour
         _currentAmmo = _maxAmmo;
 
         _hasCoin = false;
+
+        _parentWeapon.SetActive(false);
         
     }
 
@@ -121,6 +126,13 @@ public class Player : MonoBehaviour
 
             Destroy(newHitMarker, 1f);
 
+            Destructable crate = hitInfo.transform.GetComponent<Destructable>();
+
+            if(crate != null)
+            {
+                crate.DestroyCrate();
+            }
+
         }
     }
 
@@ -140,10 +152,29 @@ public class Player : MonoBehaviour
         _navAgent.Move(velocity * Time.deltaTime);
     }
 
-    public void GetCoin()
+    public void GiveCoin()
     {
         _hasCoin = true;
 
         _uiManager.AddCoin();
+    }
+
+    public void GetCoin()
+    {
+        _hasCoin = false;
+
+        _uiManager.RemoveCoin();
+    }
+
+    public bool HasCoin()
+    {
+        return _hasCoin;
+    }
+
+    public void GiveWeapon()
+    {
+        print("here");
+
+        _parentWeapon.SetActive(true);
     }
 }
